@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AksharaFlow</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0E0E14;
+    --surface:   #16161F;
+    --border:    rgba(255,255,255,0.07);
+    --text:      #E8E8F0;
+    --muted:     #6B6B82;
+    --accent:    #E8A634;
+    --accent-lo: rgba(232,166,52,0.10);
+    --accent-md: rgba(232,166,52,0.22);
+    --green:     #4ECBA0;
+    --red:       #E85A4F;
+    --font:      -apple-system, 'Segoe UI', sans-serif;
+    --tamil:     'Noto Sans Tamil', 'Latha', 'Tamil Sangam MN', sans-serif;
+  }
+
+  body {
+    width: 260px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    padding: 14px 16px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: 'அ';
+    position: absolute; right: 4px; top: -8px;
+    font-family: var(--tamil); font-size: 80px;
+    color: rgba(232,166,52,0.05); line-height: 1;
+    pointer-events: none; user-select: none;
+  }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+    background: linear-gradient(135deg, #E8A634 0%, #C47F18 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 14px rgba(232,166,52,0.4), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .logo-mark span { font-family: var(--tamil); font-size: 17px; color: #0E0E14; font-weight: 600; }
+  .header-text { flex: 1; }
+  .logo-text { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; display: block; }
+  .logo-sub  { font-size: 10px; color: var(--muted); }
+
+  /* ── Status bar ── */
+  .status-bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .status-dot.on { background: var(--green); box-shadow: 0 0 8px rgba(78,203,160,0.7); }
+  .status-label  { flex: 1; font-size: 11px; color: var(--muted); transition: color 0.3s; }
+  .status-label.on { color: var(--green); }
+  .version-chip {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-lo);
+    border: 1px solid rgba(232,166,52,0.18); border-radius: 20px; padding: 2px 7px;
+  }
+
+  /* ── Big Show Keypad Button ── */
+  .keypad-btn-wrap { padding: 12px 16px 8px; }
+  .keypad-btn {
+    width: 100%; padding: 10px 14px;
+    border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: var(--text); font-family: var(--font); font-size: 13px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 10px;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    user-select: none;
+  }
+  .keypad-btn:hover  { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18); }
+  .keypad-btn:active { transform: scale(0.98); }
+  .keypad-btn.pad-on  { background: var(--accent-lo); border-color: rgba(232,166,52,0.35); color: var(--accent); }
+  .keypad-btn.pad-on:hover { background: var(--accent-md); }
+  .keypad-btn-icon { font-size: 20px; line-height: 1; font-family: var(--tamil); }
+  .keypad-btn-label { flex: 1; text-align: left; }
+  .keypad-btn-sub { font-size: 10px; font-weight: 400; color: var(--muted); display: block; margin-top: 1px; }
+  .keypad-btn.pad-on .keypad-btn-sub { color: rgba(232,166,52,0.7); }
+  .keypad-badge {
+    font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--muted);
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .keypad-btn.pad-on .keypad-badge { background: var(--accent-lo); border-color: rgba(232,166,52,0.3); color: var(--accent); }
+
+  /* ── Controls section ── */
+  .controls { padding: 0 16px 4px; border-bottom: 1px solid var(--border); }
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .row:last-child { border-bottom: none; }
+  .label-wrap { display: flex; flex-direction: column; gap: 2px; }
+  .lbl-main { font-size: 13px; font-weight: 500; color: var(--text); }
+  .lbl-sub  { font-size: 10px; color: var(--muted); }
+
+  /* Toggle */
+  .tog { position: relative; width: 40px; height: 22px; cursor: pointer; flex-shrink: 0; }
+  .tog input { display: none; }
+  .tog-track {
+    position: absolute; inset: 0; border-radius: 22px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08); transition: 0.25s ease;
+  }
+  .tog-thumb {
+    position: absolute; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--muted); top: 2px; left: 2px; transition: 0.25s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+  .tog input:checked ~ .tog-track { background: var(--accent-md); border-color: rgba(232,166,52,0.35); }
+  .tog input:checked ~ .tog-thumb { background: var(--accent); transform: translateX(18px); box-shadow: 0 1px 8px rgba(232,166,52,0.55); }
+
+  /* ── Quick ref ── */
+  .ref-section { padding: 10px 16px 12px; border-bottom: 1px solid var(--border); }
+  .ref-head {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .ref-item {
+    display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted);
+    background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+    border-radius: 7px; padding: 5px 8px;
+  }
+  .ref-item kbd {
+    font-size: 10px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px; padding: 1px 5px; color: var(--accent); font-family: monospace; white-space: nowrap;
+  }
+  .ref-sep { color: rgba(255,255,255,0.15); font-size: 9px; }
+  .ref-ta  { font-family: var(--tamil); font-size: 14px; color: var(--text); }
+
+  /* ── Footer ── */
+  .footer { padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .foot-l { font-size: 10px; color: rgba(255,255,255,0.2); }
+  .foot-r { font-size: 10px; color: var(--accent); opacity: 0.6; }
+
+  /* ── Chrome Warning ── */
+  .chrome-warning {
+    padding: 8px 16px;
+    font-size: 9px;
+    color: var(--accent);
+    background: rgba(232,166,52,0.05);
+    border-top: 1px solid rgba(232,166,52,0.1);
+    line-height: 1.3;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-mark"><span>அ</span></div>
+  <div class="header-text">
+    <span class="logo-text">AksharaFlow</span>
+    <span class="logo-sub">Tamil keyboard overlay</span>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="status-dot" id="sDot"></div>
+  <span class="status-label" id="sLabel">Tamil mode off</span>
+  <span class="version-chip">v1.0</span>
+</div>
+
+<!-- Big prominent keypad toggle button -->
+<div class="keypad-btn-wrap">
+  <button class="keypad-btn" id="padBtn">
+    <span class="keypad-btn-icon">⌨</span>
+    <span class="keypad-btn-label">
+      <span id="padBtnText">Show Keypad</span>
+      <span class="keypad-btn-sub" id="padBtnSub">Click to show floating keyboard</span>
+    </span>
+    <span class="keypad-badge" id="padBadge">OFF</span>
+  </button>
+</div>
+
+<div class="controls">
+  <div class="row">
+    <div class="label-wrap">
+      <span class="lbl-main">Tamil mode</span>
+      <span class="lbl-sub">Remap keys to Tamil script</span>
+    </div>
+    <label class="tog">
+      <input type="checkbox" id="tamilToggle">
+      <span class="tog-track"></span>
+      <span class="tog-thumb"></span>
+    </label>
+  </div>
+</div>
+
+<div class="ref-section">
+  <div class="ref-head">Quick reference</div>
+  <div class="ref-grid">
+    <div class="ref-item"><kbd>A</kbd><span class="ref-sep">→</span><span class="ref-ta">அ</span></div>
+    <div class="ref-item"><kbd>K</kbd><span class="ref-sep">→</span><span class="ref-ta">க</span></div>
+    <div class="ref-item"><kbd>1–8</kbd><span class="ref-sep">→</span><span class="ref-ta">ஆஈஊ…</span></div>
+    <div class="ref-item"><kbd>⇧+1</kbd><span class="ref-sep">→</span><span class="ref-ta">ா ி ு…</span></div>
+    <div class="ref-item"><kbd>Z</kbd><span class="ref-sep">→</span><span class="ref-ta">ழ</span></div>
+    <div class="ref-item"><kbd>⇧+=</kbd><span class="ref-sep">→</span><span class="ref-ta">் pulli</span></div>
+  </div>
+</div>
+
+<div class="chrome-warning">
+  ⚠ Chrome blocks extensions on new tabs and the web store.
+</div>
+
+<div class="footer">
+  <span class="foot-l">AksharaFlow · Tamil Keyboard</span>
+  <span class="foot-r">Made in Chennai ♥</span>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

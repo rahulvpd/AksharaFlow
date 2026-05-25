@@ -1,0 +1,343 @@
+/* ── AksharaFlow Overlay v5 ─────────────────────────────────────────────────
+   No Google Fonts (blocked by MV3 CSP). System Tamil fonts used.
+   No !important on position/bottom/right — JS controls all placement.     */
+
+/* ── CSS custom properties ────────────────────────────────────────────────── */
+#aksharaflow-pad, #aksharaflow-fab {
+  --af-bg:        #0D0D14;
+  --af-surface:   #13131C;
+  --af-surface2:  #1A1A26;
+  --af-border:    rgba(255,255,255,0.08);
+  --af-text:      #E8E8F2;
+  --af-muted:     #55556A;
+  --af-accent:    #E8A634;
+  --af-accent-lo: rgba(232,166,52,0.10);
+  --af-accent-md: rgba(232,166,52,0.20);
+  --af-green:     #4ECBA0;
+  --af-green-lo:  rgba(78,203,160,0.08);
+  --af-green-md:  rgba(78,203,160,0.18);
+  --af-key-bg:    rgba(255,255,255,0.04);
+  --af-key-bd:    rgba(255,255,255,0.09);
+  --af-shadow:    0 24px 64px rgba(0,0,0,0.7), 0 4px 16px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
+  --af-font:      -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --af-tamil:     'Noto Sans Tamil', 'Latha', 'Tamil Sangam MN', serif;
+  --af-radius:    10px;
+  --af-key-size:  42px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FAB  — Floating Action Button (always on screen)
+   Draggable · Toggles pad visibility · Shows active state
+   ═══════════════════════════════════════════════════════════════ */
+#aksharaflow-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2147483646;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #1C1C28 0%, #13131C 100%);
+  border: 1.5px solid rgba(232,166,52,0.35);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 0 1px rgba(232,166,52,0.1),
+              0 0 24px rgba(232,166,52,0.15);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: box-shadow 0.2s, transform 0.15s, border-color 0.2s;
+}
+#aksharaflow-fab:hover {
+  border-color: rgba(232,166,52,0.65);
+  box-shadow: 0 6px 28px rgba(0,0,0,0.65), 0 0 32px rgba(232,166,52,0.28);
+  transform: scale(1.06);
+}
+#aksharaflow-fab:active { transform: scale(0.96); }
+
+#aksharaflow-fab .af-fab-icon {
+  font-size: 18px; line-height: 1;
+  color: rgba(232,166,52,0.5);
+}
+#aksharaflow-fab .af-fab-label {
+  font-family: 'Noto Sans Tamil','Latha','Tamil Sangam MN',serif;
+  font-size: 15px; font-weight: 700;
+  color: #E8A634;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+/* Tamil active — pulsing ring */
+#aksharaflow-fab[data-active="1"] {
+  border-color: var(--af-green);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 28px rgba(78,203,160,0.35);
+}
+#aksharaflow-fab[data-active="1"] .af-fab-label { color: var(--af-green); }
+
+/* Pad open state */
+#aksharaflow-fab.af-fab-open {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAD  — Floating keyboard overlay
+   ═══════════════════════════════════════════════════════════════ */
+#aksharaflow-pad {
+  /* position set entirely by JS — no CSS bottom/right here */
+  position: fixed;
+  z-index: 2147483647;
+  width: 580px;
+  border-radius: var(--af-radius);
+  background: var(--af-bg);
+  border: 1px solid var(--af-border);
+  box-shadow: var(--af-shadow);
+  font-family: var(--af-font);
+  overflow: hidden;
+  display: none; /* JS shows/hides */
+}
+
+/* ── Drag handle (top bar) ─────────────────────────────────────────────────── */
+#aksharaflow-pad #af-drag-handle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px 7px 10px;
+  background: var(--af-surface);
+  border-bottom: 1px solid var(--af-border);
+  cursor: grab;
+  user-select: none;
+  position: relative;
+}
+#aksharaflow-pad #af-drag-handle:active { cursor: grabbing; }
+
+/* 6-dot drag indicator */
+#aksharaflow-pad .af-drag-dots {
+  display: grid;
+  grid-template-columns: repeat(3, 4px);
+  grid-template-rows: repeat(2, 4px);
+  gap: 2px;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+#aksharaflow-pad .af-drag-dots span {
+  width: 3px; height: 3px; border-radius: 50%;
+  background: var(--af-muted);
+  display: block;
+}
+
+#aksharaflow-pad .af-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+}
+#aksharaflow-pad .af-logo-mark {
+  width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+  background: linear-gradient(135deg, #E8A634 0%, #C47F18 100%);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 8px rgba(232,166,52,0.4);
+}
+#aksharaflow-pad .af-logo-mark span {
+  font-family: var(--af-tamil); font-size: 12px;
+  color: #0D0D14; font-weight: 700; line-height: 1;
+}
+#aksharaflow-pad .af-logo-text {
+  font-size: 12px; font-weight: 700;
+  color: var(--af-text); letter-spacing: -0.01em;
+}
+#aksharaflow-pad .af-status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--af-muted);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+#aksharaflow-pad[data-active="1"] .af-status-dot {
+  background: var(--af-green);
+  box-shadow: 0 0 8px rgba(78,203,160,0.8);
+}
+
+#aksharaflow-pad .af-header-right { display: flex; align-items: center; gap: 8px; }
+
+/* Toggle switch */
+#aksharaflow-pad .af-switch { position: relative; width: 36px; height: 20px; cursor: pointer; flex-shrink: 0; }
+#aksharaflow-pad .af-switch input { display: none; }
+#aksharaflow-pad .af-slider {
+  position: absolute; inset: 0; border-radius: 20px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
+  transition: 0.22s;
+}
+#aksharaflow-pad .af-slider:before {
+  content: ''; position: absolute;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--af-muted); top: 2px; left: 2px; transition: 0.22s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+#aksharaflow-pad .af-switch input:checked + .af-slider {
+  background: var(--af-green-md); border-color: rgba(78,203,160,0.4);
+}
+#aksharaflow-pad .af-switch input:checked + .af-slider:before {
+  background: var(--af-green); transform: translateX(16px);
+  box-shadow: 0 0 8px rgba(78,203,160,0.6);
+}
+
+#aksharaflow-pad .af-minimize-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--af-muted);
+  width: 24px; height: 24px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-family: var(--af-font);
+  font-size: 14px;
+  line-height: 1;
+  transition: 0.2s;
+}
+#aksharaflow-pad .af-minimize-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: var(--af-text);
+}
+#aksharaflow-pad .af-minimize-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── Hint bar ──────────────────────────────────────────────────────────────── */
+#aksharaflow-pad #af-hint {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 3px 12px;
+  font-size: 9.5px; color: var(--af-muted);
+  background: rgba(255,255,255,0.015);
+  border-bottom: 1px solid var(--af-border);
+  font-family: var(--af-font);
+}
+#aksharaflow-pad .af-lang-badge {
+  font-size: 9px; font-weight: 700;
+  padding: 1px 8px; border-radius: 20px;
+  background: var(--af-accent-lo); color: var(--af-accent);
+  border: 1px solid rgba(232,166,52,0.2);
+  font-family: var(--af-tamil);
+}
+
+/* ── Key area wrapper ──────────────────────────────────────────────────────── */
+#aksharaflow-pad #af-keys {
+  padding: 6px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Key row block — each section has a label + keys + bottom border ───────── */
+#aksharaflow-pad .af-key-row {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+#aksharaflow-pad .af-key-row:last-child { border-bottom: none; }
+
+#aksharaflow-pad .af-row-label {
+  font-size: 8px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase;
+  color: rgba(255,255,255,0.18); padding: 0 2px 4px 2px;
+  font-family: var(--af-font);
+}
+#aksharaflow-pad .af-row-matra  .af-row-label { color: rgba(232,166,52,0.45); }
+#aksharaflow-pad .af-row-vowels .af-row-label { color: rgba(78,203,160,0.45); }
+#aksharaflow-pad .af-row-cons   .af-row-label { color: rgba(255,255,255,0.20); }
+
+/* Consonant sub-rows */
+#aksharaflow-pad .af-row {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  margin-bottom: 3px;
+}
+#aksharaflow-pad .af-row:last-child { margin-bottom: 0; }
+
+/* Keys container for matra + vowel rows */
+#aksharaflow-pad .af-row-keys {
+  display: flex; flex-wrap: wrap; gap: 3px; justify-content: center;
+}
+
+/* ── Base key — square ─────────────────────────────────────────────────────── */
+#aksharaflow-pad .af-key {
+  width:  var(--af-key-size);
+  height: var(--af-key-size);
+  border-radius: 6px;
+  border: 1px solid var(--af-key-bd);
+  background: var(--af-key-bg);
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px; padding: 0;
+  transition: background 0.1s, border-color 0.1s, transform 0.08s, box-shadow 0.1s;
+  user-select: none; -webkit-user-select: none;
+  flex-shrink: 0;
+}
+#aksharaflow-pad .af-key:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.18);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+#aksharaflow-pad .af-key:active,
+#aksharaflow-pad .af-key-pressed {
+  transform: scale(0.88) !important;
+  background: rgba(232,166,52,0.22) !important;
+  border-color: rgba(232,166,52,0.55) !important;
+}
+#aksharaflow-pad .af-main {
+  font-family: var(--af-tamil);
+  font-size: 16px; color: var(--af-text); line-height: 1;
+}
+#aksharaflow-pad .af-sub {
+  font-size: 7px; color: var(--af-muted); font-weight: 600;
+  line-height: 1; font-family: var(--af-font); letter-spacing: 0.03em;
+}
+
+/* ── Matra keys — gold ─────────────────────────────────────────────────────── */
+#aksharaflow-pad .af-matra-key {
+  background: var(--af-accent-lo) !important;
+  border-color: rgba(232,166,52,0.22) !important;
+}
+#aksharaflow-pad .af-matra-key .af-main { color: var(--af-accent) !important; font-size: 17px; }
+#aksharaflow-pad .af-matra-key .af-sub  { color: rgba(232,166,52,0.6) !important; }
+#aksharaflow-pad .af-matra-key:hover {
+  background: var(--af-accent-md) !important;
+  border-color: rgba(232,166,52,0.5) !important;
+  box-shadow: 0 2px 10px rgba(232,166,52,0.2) !important;
+}
+
+/* ── Long vowel keys — teal ────────────────────────────────────────────────── */
+#aksharaflow-pad .af-num-key {
+  background: var(--af-green-lo) !important;
+  border-color: rgba(78,203,160,0.20) !important;
+}
+#aksharaflow-pad .af-num-key .af-main { color: #6FD9B8 !important; }
+#aksharaflow-pad .af-num-key .af-sub  { color: rgba(78,203,160,0.65) !important; }
+#aksharaflow-pad .af-num-key:hover {
+  background: var(--af-green-md) !important;
+  border-color: rgba(78,203,160,0.45) !important;
+  box-shadow: 0 2px 10px rgba(78,203,160,0.15) !important;
+}
+
+/* ── Short vowel keys — slight teal tint ──────────────────────────────────── */
+#aksharaflow-pad .af-vowel-key {
+  background: rgba(78,203,160,0.03) !important;
+  border-color: rgba(78,203,160,0.14) !important;
+}
+#aksharaflow-pad .af-vowel-key .af-main { color: #5DC8A9 !important; }
+#aksharaflow-pad .af-vowel-key .af-sub  { color: rgba(78,203,160,0.55) !important; }
+#aksharaflow-pad .af-vowel-key:hover {
+  background: rgba(78,203,160,0.10) !important;
+  border-color: rgba(78,203,160,0.35) !important;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────────── */
+#aksharaflow-pad #af-footer {
+  padding: 4px 12px;
+  font-size: 9px; color: rgba(255,255,255,0.15);
+  text-align: center;
+  border-top: 1px solid var(--af-border);
+  background: var(--af-surface);
+  font-family: var(--af-font);
+}
